@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Naughty Boys List</title>
+<style>
+  :root {
+    --bg: #f5f1ea;
+    --card: #ffffff;
+    --ink: #1f1d1a;
+    --muted: #6b655c;
+    --line: #e2dbcf;
+    --accent: #1e3a5f;
+    --strike: #b8312f;
+    --gold: #c9a227;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: Georgia, "Times New Roman", serif;
+    background: var(--bg);
+    color: var(--ink);
+  }
+  header {
+    background: var(--accent);
+    color: #fff;
+    padding: 24px 28px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  header h1 { margin: 0; font-size: 28px; letter-spacing: 0.5px; }
+  header p { margin: 4px 0 0; opacity: 0.8; font-size: 14px; }
+  main { padding: 24px 28px 60px; max-width: 1200px; margin: 0 auto; }
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 18px;
+    margin-bottom: 24px;
+  }
+  .panel h2 { margin: 0 0 12px; font-size: 18px; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  input[type="text"], input[type="search"] {
+    padding: 9px 11px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font: inherit;
+    min-width: 0;
+    flex: 1 1 180px;
+  }
+  button {
+    font: inherit;
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: #fff;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  button:hover { filter: brightness(1.1); }
+  button.ghost { background: transparent; color: var(--accent); }
+  button.danger { background: var(--strike); border-color: var(--strike); }
+  button.small { padding: 4px 9px; font-size: 13px; }
+  .file-btn {
+    display: inline-block;
+    padding: 8px 14px;
+    border: 1px dashed var(--accent);
+    border-radius: 6px;
+    color: var(--accent);
+    cursor: pointer;
+    font-size: 14px;
+    text-align: center;
+  }
+  .file-btn input { display: none; }
+  .file-btn.small { padding: 4px 9px; font-size: 13px; }
+  .hint { color: var(--muted); font-size: 13px; margin-top: 8px; }
+
+  .stats { color: var(--muted); font-size: 14px; margin-bottom: 14px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 18px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--strike);
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .card.clean { border-top-color: var(--line); }
+  .card-head { display: flex; gap: 12px; align-items: center; }
+  .avatar {
+    width: 64px; height: 64px; border-radius: 50%;
+    object-fit: cover; flex: 0 0 64px;
+    background: var(--line);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; color: var(--muted);
+    overflow: hidden;
+  }
+  .avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .name { font-size: 18px; font-weight: bold; word-break: break-word; }
+  .badge {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: var(--strike);
+    color: #fff;
+    font-size: 12px;
+    font-family: Arial, sans-serif;
+  }
+  .badge.zero { background: var(--line); color: var(--muted); }
+  .badge.gold { background: var(--gold); }
+
+  .strikes { list-style: none; padding: 0; margin: 0; font-size: 14px; }
+  .strikes li {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid var(--line);
+  }
+  .strikes li:last-child { border-bottom: none; }
+  .s-body { flex: 1; min-width: 0; word-break: break-word; }
+  .strikes .meta { color: var(--muted); font-size: 12px; font-family: Arial, sans-serif; }
+  .thumb {
+    width: 56px; height: 56px; flex: 0 0 56px;
+    object-fit: cover; border-radius: 6px;
+    border: 1px solid var(--line);
+    cursor: zoom-in;
+    transition: transform 0.15s;
+  }
+  .thumb:hover { transform: scale(1.05); }
+  .evidence-tag {
+    display: inline-block; margin-top: 3px;
+    font-family: Arial, sans-serif; font-size: 11px;
+    color: var(--accent); cursor: pointer; text-decoration: underline;
+  }
+  .strikes .x {
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; font-size: 18px; padding: 0 4px; line-height: 1;
+  }
+  .strikes .x:hover { color: var(--strike); }
+
+  .add-strike { display: flex; flex-wrap: wrap; gap: 6px; }
+  .add-strike input { font-size: 14px; padding: 6px 8px; flex: 1 1 100%; }
+  .add-strike .file-btn { flex: 1 1 auto; }
+  .add-strike button { flex: 0 0 auto; }
+
+  .card-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; }
+  .empty { text-align: center; color: var(--muted); padding: 40px 0; font-style: italic; }
+
+  /* lightbox */
+  #lightbox {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(20, 18, 16, 0.88);
+    z-index: 100;
+    align-items: center; justify-content: center;
+    flex-direction: column;
+    padding: 24px;
+    cursor: zoom-out;
+  }
+  #lightbox.open { display: flex; }
+  #lightbox img {
+    max-width: 92vw; max-height: 80vh;
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    background: #fff;
+  }
+  #lightbox .caption {
+    color: #fff; margin-top: 14px; text-align: center; font-size: 15px; max-width: 80vw;
+  }
+  #lightbox .close {
+    position: absolute; top: 14px; right: 20px;
+    background: none; border: none; color: #fff;
+    font-size: 36px; cursor: pointer; line-height: 1;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Naughty Boys List</h1>
+    <p>Sigma Chi &middot; Iota Mu Chapter</p>
+  </div>
+  <div class="row">
+    <button class="ghost" onclick="exportPNG()" style="color:#fff;border-color:#fff">Export PNG</button>
+  </div>
+</header>
+
+<main>
+  <section class="panel">
+    <h2>Add a brother</h2>
+    <div class="row">
+      <input type="text" id="newName" placeholder="Brother's name" onkeydown="if(event.key==='Enter')addBrother()">
+      <label class="file-btn" id="newPhotoLabel">
+        Choose photo (optional)
+        <input type="file" id="newPhoto" accept="image/*">
+      </label>
+      <button onclick="addBrother()">Add brother</button>
+    </div>
+    <div class="hint">Photos are resized automatically so they fit in browser storage.</div>
+  </section>
+
+  <div class="row" style="margin-bottom:16px">
+    <input type="search" id="search" placeholder="Search by name..." oninput="render()">
+    <label class="row" style="font-size:14px;color:var(--muted)">
+      <input type="checkbox" id="showClean" onchange="render()"> Show brothers with no strikes
+    </label>
+  </div>
+
+  <div class="stats" id="stats"></div>
+  <div class="grid" id="grid"></div>
+</main>
+
+<div id="lightbox" onclick="closeLightbox()">
+  <button class="close" onclick="closeLightbox()" aria-label="Close">&times;</button>
+  <img id="lb-img" alt="Evidence">
+  <div class="caption" id="lb-caption"></div>
+</div>
+
+<script>
+  const KEY = 'naughtyBoysList.v2';
+  let state = load();
+  let pendingPhoto = null;        // dataURL for the add-brother form
+  const pendingEvidence = {};     // brotherId -> dataURL waiting for a strike
+
+  // ---------- storage ----------
+  function load() {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed.brothers)) return parsed;
+      }
+    } catch (e) { /* storage unavailable: start empty */ }
+    return { brothers: [] };
+  }
+
+  function save() {
+    try {
+      localStorage.setItem(KEY, JSON.stringify(state));
+      return true;
+    } catch (e) {
+      alert('Could not save. Browser storage may be full. Try a smaller image or remove old evidence.');
+      return false;
+    }
+  }
+
+  // ---------- helpers ----------
+  function uid() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  }
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function today() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  function findBrother(id) {
+    return state.brothers.find(b => b.id === id);
+  }
+
+  function findStrike(brother, strikeId) {
+    return brother ? brother.strikes.find(s => s.id === strikeId) : null;
+  }
+
+  // Read an image file and return a resized JPEG dataURL
+  function resizeImage(file, maxSize = 300, quality = 0.85) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = reject;
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = reject;
+        img.onload = () => {
+          const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // ---------- brothers ----------
+  document.getElementById('newPhoto').addEventListener('change', async function () {
+    if (!this.files[0]) return;
+    try {
+      pendingPhoto = await resizeImage(this.files[0], 300);
+      document.getElementById('newPhotoLabel').firstChild.nodeValue = 'Photo selected ';
+    } catch (e) {
+      alert('That file could not be read as an image.');
+      pendingPhoto = null;
+    }
+  });
+
+  function addBrother() {
+    const input = document.getElementById('newName');
+    const name = input.value.trim();
+    if (!name) { input.focus(); return; }
+    if (state.brothers.some(b => b.name.toLowerCase() === name.toLowerCase())) {
+      alert('That brother is already on the list.');
+      return;
+    }
+    state.brothers.push({ id: uid(), name, photo: pendingPhoto || '', strikes: [] });
+    save();
+    input.value = '';
+    pendingPhoto = null;
+    document.getElementById('newPhoto').value = '';
+    document.getElementById('newPhotoLabel').firstChild.nodeValue = 'Choose photo (optional) ';
+    render();
+  }
+
+  function renameBrother(brotherId) {
+    const b = findBrother(brotherId);
+    if (!b) return;
+    const name = prompt('Edit name:', b.name);
+    if (name && name.trim()) {
+      b.name = name.trim();
+      save();
+      render();
+    }
+  }
+
+  async function setPhoto(brotherId, input) {
+    const b = findBrother(brotherId);
+    if (!b || !input.files[0]) return;
+    try {
+      b.photo = await resizeImage(input.files[0], 300);
+      save();
+      render();
+    } catch (e) {
+      alert('That file could not be read as an image.');
+    }
+  }
+
+  function removePhoto(brotherId) {
+    const b = findBrother(brotherId);
+    if (!b) return;
+    b.photo = '';
+    save();
+    render();
+  }
+
+  function deleteBrother(brotherId) {
+    const b = findBrother(brotherId);
+    if (!b) return;
+    if (confirm('Remove ' + b.name + ' and all of their strikes and evidence from the list?')) {
+      state.brothers = state.brothers.filter(x => x.id !== brotherId);
+      delete pendingEvidence[brotherId];
+      save();
+      render();
+    }
+  }
+
+  // ---------- strikes ----------
+  async function attachEvidence(brotherId, input) {
+    if (!input.files[0]) return;
+    try {
+      pendingEvidence[brotherId] = await resizeImage(input.files[0], 900, 0.8);
+    } catch (e) {
+      alert('That file could not be read as an image.');
+      pendingEvidence[brotherId] = null;
+    }
+    // update only the label so the typed reason is not lost
+    const lbl = document.getElementById('evlabel-' + brotherId);
+    if (lbl) lbl.textContent = pendingEvidence[brotherId] ? 'Evidence attached \u2713' : 'Attach evidence image';
+    input.value = '';
+  }
+
+  function addStrike(brotherId) {
+    const input = document.getElementById('reason-' + brotherId);
+    const reason = input.value.trim();
+    if (!reason) { input.focus(); return; }
+    const b = findBrother(brotherId);
+    if (!b) return;
+    b.strikes.push({
+      id: uid(),
+      reason,
+      date: today(),
+      image: pendingEvidence[brotherId] || ''
+    });
+    if (!save()) {
+      b.strikes.pop();
+      return;
+    }
+    delete pendingEvidence[brotherId];
+    render();
+  }
+
+  function removeStrike(brotherId, strikeId) {
+    const b = findBrother(brotherId);
+    if (!b) return;
+    if (!confirm('Remove this strike' + (findStrike(b, strikeId)?.image ? ' and its evidence image' : '') + '?')) return;
+    b.strikes = b.strikes.filter(s => s.id !== strikeId);
+    save();
+    render();
+  }
+
+  // ---------- evidence viewer ----------
+  function openEvidence(brotherId, strikeId) {
+    const b = findBrother(brotherId);
+    const s = findStrike(b, strikeId);
+    if (!s || !s.image) return;
+    document.getElementById('lb-img').src = s.image;
+    document.getElementById('lb-caption').textContent =
+      b.name + ' \u2014 ' + s.reason + ' (' + s.date + ')';
+    document.getElementById('lightbox').classList.add('open');
+  }
+
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+    document.getElementById('lb-img').src = '';
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeLightbox();
+  });
+
+  // ---------- rendering ----------
+  function render() {
+    const query = document.getElementById('search').value.trim().toLowerCase();
+    const showClean = document.getElementById('showClean').checked;
+
+    let list = state.brothers.slice().sort((a, b) =>
+      b.strikes.length - a.strikes.length || a.name.localeCompare(b.name));
+
+    if (query) list = list.filter(b => b.name.toLowerCase().includes(query));
+    if (!showClean && !query) list = list.filter(b => b.strikes.length > 0);
+
+    const total = state.brothers.reduce((n, b) => n + b.strikes.length, 0);
+    const flagged = state.brothers.filter(b => b.strikes.length > 0).length;
+    document.getElementById('stats').textContent =
+      state.brothers.length + ' brothers tracked \u00B7 ' + flagged + ' with strikes \u00B7 ' + total + ' total strikes';
+
+    const grid = document.getElementById('grid');
+    if (list.length === 0) {
+      grid.innerHTML = '<div class="empty">' +
+        (state.brothers.length === 0 ? 'The list is empty. Add a brother above to begin.' : 'No brothers match this view.') +
+        '</div>';
+      return;
+    }
+
+    grid.innerHTML = list.map(b => {
+      const count = b.strikes.length;
+      const badgeClass = count === 0 ? 'badge zero' : (count >= 3 ? 'badge' : 'badge gold');
+      const avatar = b.photo
+        ? '<img src="' + b.photo + '" alt="">'
+        : esc(b.name.charAt(0).toUpperCase());
+
+      const strikeItems = count === 0
+        ? '<li><span class="meta">No strikes</span></li>'
+        : b.strikes.map(s => {
+            const thumb = s.image
+              ? '<img class="thumb" src="' + s.image + '" alt="Evidence" title="View evidence" ' +
+                'onclick="openEvidence(\'' + b.id + '\',\'' + s.id + '\')">'
+              : '';
+            const tag = s.image
+              ? '<br><span class="evidence-tag" onclick="openEvidence(\'' + b.id + '\',\'' + s.id + '\')">View evidence</span>'
+              : '';
+            return '<li>' + thumb +
+              '<div class="s-body"><span>' + esc(s.reason) + '</span><br>' +
+              '<span class="meta">' + esc(s.date) + '</span>' + tag + '</div>' +
+              '<button class="x" title="Remove strike" onclick="removeStrike(\'' + b.id + '\',\'' + s.id + '\')">&times;</button>' +
+              '</li>';
+          }).join('');
+
+      const hasPending = !!pendingEvidence[b.id];
+
+      return '<div class="card' + (count === 0 ? ' clean' : '') + '">' +
+        '<div class="card-head">' +
+          '<div class="avatar">' + avatar + '</div>' +
+          '<div>' +
+            '<div class="name">' + esc(b.name) + '</div>' +
+            '<span class="' + badgeClass + '">' + count + (count === 1 ? ' strike' : ' strikes') + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<ul class="strikes">' + strikeItems + '</ul>' +
+        '<div class="add-strike">' +
+          '<input type="text" id="reason-' + b.id + '" placeholder="Reason for strike" ' +
+            'onkeydown="if(event.key===\'Enter\')addStrike(\'' + b.id + '\')">' +
+          '<label class="file-btn small">' +
+            '<span id="evlabel-' + b.id + '">' + (hasPending ? 'Evidence attached \u2713' : 'Attach evidence image') + '</span>' +
+            '<input type="file" accept="image/*" onchange="attachEvidence(\'' + b.id + '\', this)">' +
+          '</label>' +
+          '<button class="small" onclick="addStrike(\'' + b.id + '\')">Add strike</button>' +
+        '</div>' +
+        '<div class="card-actions">' +
+          '<label class="file-btn small">Photo' +
+            '<input type="file" accept="image/*" onchange="setPhoto(\'' + b.id + '\', this)"></label>' +
+          (b.photo ? '<button class="small ghost" onclick="removePhoto(\'' + b.id + '\')">Remove photo</button>' : '') +
+          '<button class="small ghost" onclick="renameBrother(\'' + b.id + '\')">Edit name</button>' +
+          '<button class="small danger" onclick="deleteBrother(\'' + b.id + '\')">Delete</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  // ---------- PNG export ----------
+  function loadImg(src) {
+    return new Promise(resolve => {
+      if (!src) return resolve(null);
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => resolve(null);
+      img.src = src;
+    });
+  }
+
+  function truncateText(ctx, text, maxW) {
+    if (ctx.measureText(text).width <= maxW) return text;
+    let t = text;
+    while (t.length > 0 && ctx.measureText(t + '\u2026').width > maxW) t = t.slice(0, -1);
+    return t + '\u2026';
+  }
+
+  function roundRectPath(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  const PNG_MAX_LINES = 8;
+  const PNG_LINE_H = 22;
+  const PNG_TOP = 100;
+
+  function pngCardHeight(b) {
+    const n = b.strikes.length;
+    const shown = Math.min(n, PNG_MAX_LINES) + (n > PNG_MAX_LINES ? 1 : 0);
+    return PNG_TOP + shown * PNG_LINE_H + 18;
+  }
+
+  function drawPngCard(ctx, x, y, w, h, b, img) {
+    roundRectPath(ctx, x, y, w, h, 10);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    ctx.strokeStyle = '#e2dbcf';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.fillStyle = '#b8312f';
+    ctx.fillRect(x + 1, y, w - 2, 4);
+
+    const AV = 64, ax = x + 20, ay = y + 22;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(ax + AV / 2, ay + AV / 2, AV / 2, 0, Math.PI * 2);
+    ctx.closePath();
+    ctx.clip();
+    if (img) {
+      const s = Math.min(img.width, img.height);
+      const sx = (img.width - s) / 2, sy = (img.height - s) / 2;
+      ctx.drawImage(img, sx, sy, s, s, ax, ay, AV, AV);
+    } else {
+      ctx.fillStyle = '#e2dbcf';
+      ctx.fillRect(ax, ay, AV, AV);
+      ctx.fillStyle = '#6b655c';
+      ctx.font = 'bold 28px Georgia, serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(b.name.charAt(0).toUpperCase(), ax + AV / 2, ay + AV / 2 + 10);
+      ctx.textAlign = 'left';
+    }
+    ctx.restore();
+
+    const tx = ax + AV + 14;
+    const maxTextW = x + w - 20 - tx;
+    ctx.fillStyle = '#1f1d1a';
+    ctx.font = 'bold 20px Georgia, serif';
+    ctx.fillText(truncateText(ctx, b.name, maxTextW), tx, ay + 22);
+
+    const count = b.strikes.length;
+    const label = count + (count === 1 ? ' strike' : ' strikes');
+    ctx.font = '13px Arial, sans-serif';
+    const bw = ctx.measureText(label).width + 18;
+    ctx.fillStyle = '#b8312f';
+    roundRectPath(ctx, tx, ay + 32, bw, 22, 11);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(label, tx + 9, ay + 47);
+
+    const lineY = y + PNG_TOP - 8;
+    ctx.strokeStyle = '#e2dbcf';
+    ctx.beginPath();
+    ctx.moveTo(x + 20, lineY);
+    ctx.lineTo(x + w - 20, lineY);
+    ctx.stroke();
+
+    let ly = y + PNG_TOP + 10;
+    b.strikes.slice(0, PNG_MAX_LINES).forEach((s, i) => {
+      const dateText = s.date || '';
+      ctx.font = '12px Arial, sans-serif';
+      const dateW = ctx.measureText(dateText).width;
+      ctx.fillStyle = '#6b655c';
+      ctx.textAlign = 'right';
+      ctx.fillText(dateText, x + w - 20, ly);
+      ctx.textAlign = 'left';
+
+      ctx.font = '15px Georgia, serif';
+      ctx.fillStyle = '#1f1d1a';
+      const reasonMaxW = (x + w - 20) - (x + 20) - dateW - 16;
+      ctx.fillText(truncateText(ctx, (i + 1) + '. ' + s.reason, reasonMaxW), x + 20, ly);
+      ly += PNG_LINE_H;
+    });
+    if (b.strikes.length > PNG_MAX_LINES) {
+      ctx.font = 'italic 14px Georgia, serif';
+      ctx.fillStyle = '#6b655c';
+      ctx.fillText('+ ' + (b.strikes.length - PNG_MAX_LINES) + ' more', x + 20, ly);
+    }
+  }
+
+  async function exportPNG() {
+    const list = state.brothers
+      .filter(b => b.strikes.length > 0)
+      .sort((a, b) => b.strikes.length - a.strikes.length || a.name.localeCompare(b.name));
+    if (list.length === 0) {
+      alert('No brothers with strikes to export yet.');
+      return;
+    }
+
+    const images = await Promise.all(list.map(b => loadImg(b.photo)));
+
+    const W = 1000, PAD = 40, GAP = 20;
+    const CARD_W = (W - PAD * 2 - GAP) / 2;
+    const HEADER_H = 130, FOOT_H = 50;
+
+    const rows = [];
+    for (let i = 0; i < list.length; i += 2) {
+      const row = [];
+      for (let j = 0; j < 2 && i + j < list.length; j++) {
+        row.push({ b: list[i + j], img: images[i + j] });
+      }
+      rows.push(row);
+    }
+
+    let H = HEADER_H + GAP;
+    rows.forEach(row => {
+      H += Math.max(...row.map(c => pngCardHeight(c.b))) + GAP;
+    });
+    H += FOOT_H;
+
+    const scale = 2;
+    const canvas = document.createElement('canvas');
+    canvas.width = W * scale;
+    canvas.height = H * scale;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(scale, scale);
+    ctx.textBaseline = 'alphabetic';
+
+    ctx.fillStyle = '#f5f1ea';
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.fillStyle = '#1e3a5f';
+    ctx.fillRect(0, 0, W, HEADER_H);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 40px Georgia, serif';
+    ctx.fillText('Naughty Boys List', PAD, 62);
+    ctx.font = '18px Georgia, serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.fillText('Sigma Chi \u00B7 Iota Mu Chapter', PAD, 96);
+    ctx.textAlign = 'right';
+    ctx.fillText(today(), W - PAD, 96);
+    ctx.textAlign = 'left';
+
+    let y = HEADER_H + GAP;
+    rows.forEach(row => {
+      const rowH = Math.max(...row.map(c => pngCardHeight(c.b)));
+      row.forEach((c, col) => {
+        const x = PAD + col * (CARD_W + GAP);
+        drawPngCard(ctx, x, y, CARD_W, rowH, c.b, c.img);
+      });
+      y += rowH + GAP;
+    });
+
+    ctx.fillStyle = '#6b655c';
+    ctx.font = '13px Arial, sans-serif';
+    ctx.textAlign = 'center';
+    const total = list.reduce((n, b) => n + b.strikes.length, 0);
+    ctx.fillText(list.length + ' brothers \u00B7 ' + total + ' total strikes', W / 2, H - 20);
+    ctx.textAlign = 'left';
+
+    canvas.toBlob(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'naughty-boys-list-' + today() + '.png';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }, 'image/png');
+  }
+
+  render();
+</script>
+</body>
+</html>
